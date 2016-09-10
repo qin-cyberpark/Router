@@ -1,0 +1,27 @@
+# Cyberpark Router setup for fibre
+# Script Verison 1.0
+# Device & Version: RB751U-2HnD@v5.22
+
+# port 1 - WAN/Fibre with vlan 10
+# port 2-5 - Local lan subnet
+
+#set password for admin
+/password old-password="" new-password="Cyber123" confirm-new-password="Cyber123"
+
+#add vlan 10 tag on ether1-gateway for fibre
+/interface vlan
+add interface=ether1-gateway name=vlan10 vlan-id=10
+
+#add pppoe-client for fibre connection - replace the username and password
+/interface pppoe-client
+add name=pppoe-out1 add-default-route=yes disabled=no use-peer-dns=yes interface=vlan10 max-mtu=1500 user=CP700499@dsl.bizstream.co.nz password=Cyber123
+
+#replace NAT setting
+/ip firewall nat
+remove [find out-interface="ether1-gateway"] 
+/ip firewall nat
+add action=masquerade chain=srcnat out-interface=pppoe-out1
+
+#set wireless - replace the ssid and password
+/interface wireless set wlan1 ssid="CyberPark" tx-power-mode="card-rates" tx-power=17
+/interface wireless security-profiles set default mode=dynamic-keys authentication-types=wpa2-psk wpa2-pre-shared-key=12345678
